@@ -11,6 +11,9 @@ WORKDIR /home/frappe/frappe-bench
 # Repos already in apps/ (erpnext ships in the base image) reuse the pinned copy; get-app would prompt and abort.
 # frappe_apps.txt records real app dir names (repo name can differ) for install-app on boot.
 ARG FRAPPE_APPS=""
+
+   # Marley's patient_portal imports socketio_port from common_site_config.json at build time
+   RUN env/bin/python -c "import json,os; p='sites/common_site_config.json'; d=json.load(open(p)) if os.path.exists(p) and os.path.getsize(p) else {}; d.setdefault('socketio_port', 9000); json.dump(d, open(p,'w'), indent=1)"
 RUN touch frappe_apps.txt \
     && for app in $(echo "$FRAPPE_APPS" | tr ',' ' '); do \
       url="${app%@*}"; branch="${app##*@}"; \
